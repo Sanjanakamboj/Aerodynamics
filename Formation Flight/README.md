@@ -1,4 +1,4 @@
-# Formation Flight — Aerodynamics of External Flow (LMECA2323, Homework 2)
+# Formation Flight — Aerodynamics of External Flow
 
 Prandtl Lifting-Line Theory (PLLT) study of two-aircraft formation flight: a **leader** flying in free-stream conditions and a **trailer** surfing the leader's rolled-up wake. The study quantifies the induced-drag benefit the trailer gains from the leader's wake, both before and after trimming out the resulting rolling moment with ailerons.
 
