@@ -39,10 +39,9 @@ Full derivations, assumptions, and discussion are in the [report](Report/Formati
 │   ├── Formation Flight Report.tex   # LaTeX source of the report
 │   └── Formation Flight Report.pdf   # Compiled report
 ├── Figures/
-│   ├── Study Case.png         # Leader/trailer/2VS geometry schematic
-│   ├── UCLouvain_logo.svg.png, epl.png   # Title-page logos
-│   └── extracted/             # Plots exported from the notebook, used in the report
-└── Chapters/                  # (reserved for split-out report sections; currently empty)
+    ├── Study Case.png         # Leader/trailer/2VS geometry schematic
+    ├── UCLouvain_logo.svg.png, epl.png   # Title-page logos
+    └── extracted/             # Plots exported from the notebook, used in the report
 ```
 
 ## Notebook contents
