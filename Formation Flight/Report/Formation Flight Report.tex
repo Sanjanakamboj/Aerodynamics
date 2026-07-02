@@ -1,0 +1,270 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black]{hyperref}
+
+\begin{document}
+
+% ---------------- TITLE PAGE ----------------
+\begin{titlepage}
+\centering
+\begin{minipage}[c]{0.45\textwidth}
+\centering
+\includegraphics[width=0.55\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/UCLouvain_logo.svg.png}
+\end{minipage}%
+\hfill
+\begin{minipage}[c]{0.45\textwidth}
+\centering
+\includegraphics[width=0.28\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/epl.png}
+\end{minipage}
+
+\vspace{3cm}
+\noindent\rule{\textwidth}{0.8pt}
+
+\vspace{0.5cm}
+{\LARGE \textbf{LMECA2323 - Aerodynamics of External Flow}}
+
+\vspace{0.5cm}
+{\Large \textbf{Homework 2}}
+
+\vspace{0.5cm}
+{\Large Formation Flights}
+
+\vspace{0.5cm}
+\noindent\rule{\textwidth}{0.8pt}
+
+\vspace{2cm}
+{\large
+Teachers:\\
+G. Winckelmans\\
+J.-B. Crismer
+}
+
+\vspace{2cm}
+{\large
+Student:\\
+Sanjana Rani
+}
+
+\vfill
+{\large 2026-07-02}
+
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% ---------------- PROBLEM STATEMENT ----------------
+\section*{Problem Statement}
+\addcontentsline{toc}{section}{Problem Statement}
+
+We consider two identical aircraft of the same weight flying in formation (Figure~\ref{fig:studycase}): the \textbf{leader}, flying in free-stream conditions, and the \textbf{trailer}, surfing close to the leader's far wake. Both aircraft are represented by a straight, untwisted lifting line with 2D lift-curve slope $a_0 = 2\pi$ (thin-airfoil value, used for both the real wing sections and the ``pseudo-sections'' inside the fuselage, which is otherwise neglected). The wing chord is linearly tapered,
+$$\frac{c(\xi)}{\bar c} = (1+\lambda) - 2\lambda|\xi|, \qquad \xi = \frac{y}{b/2}, \qquad \lambda = \frac{1-\Lambda}{1+\Lambda},$$
+where $\Lambda = c_{min}/c_{max}$ is the classical taper ratio.
+
+The leader sheds a wake that, sufficiently far downstream, rolls up into a two-vortex system (2VS) of circulation $\pm\Gamma_0$ and spacing $b_0$, modeled with the low-order algebraic (Burnham-Hallock) vortex profile $\Gamma(r) = \Gamma_0 r^2/(r^2+r_c^2)$. The trailer flies at the same altitude as the vortex centers, at a chosen offset $d_s$ from the port vortex, and experiences a non-uniform upwash $w_v(y)$ from the 2VS.
+
+The homework is structured in three parts:
+\begin{itemize}
+\item \textbf{Part I -- Leader aircraft}: characterize the leader (circulation, span loading, effective angle of attack, induced drag, Oswald efficiency) and its far wake (2VS parameters, induced velocity profile).
+\item \textbf{Part II -- Untrimmed trailer aircraft}: compute the trailer's response to the leader's upwash (circulation, span loading, effective angle of attack, induced drag), and the rolling moment it experiences.
+\item \textbf{Part III -- Trimmed trailer aircraft}: trim the trailer with an antisymmetric aileron deflection $\delta_a$ so that the rolling moment is zero, and quantify the resulting induced-drag benefit and the overall potential of commercial formation flight.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/Study Case.png}
+\caption{Study case: leader and trailer aircraft, with the leader's rolled-up wake represented as a two-vortex system (2VS) of spacing $b_0$. The trailer is offset by $d_s$ relative to the port vortex.}
+\label{fig:studycase}
+\end{figure}
+
+\newpage
+
+\section{Introduction}
+
+This report is prepared for LMECA2323 - Aerodynamics of External Flow, Homework 2: Formation Flights (Teachers: G. Winckelmans, J.-B. Crismer; Student: Sanjana Rani).
+
+Formation flight is the practice of flying multiple aircraft in close, coordinated proximity so that a trailing aircraft benefits from the aerodynamic wake of a leading one. The concept is borrowed from migratory birds, which fly in V-formations to reduce individual energy expenditure over long distances, and has long been used in military and aerobatic contexts for tactical and display purposes.
+
+For commercial aviation, the interest is different: a trailing aircraft positioned correctly relative to the leader's wake experiences a favorable upwash that reduces the angle of attack -- and hence the induced drag -- needed to sustain the same lift. Over long cruise legs, even a modest percentage reduction in drag translates into meaningful fuel savings, making extended formation flight a candidate concept for reducing the environmental footprint of commercial aviation. This report evaluates that benefit quantitatively using simplified Prandtl Lifting-Line (PLL) theory, for a leader aircraft flying in free-stream conditions and a trailer surfing close to the leader's rolled-up wake (Figure~\ref{fig:studycase}).
+
+\section{Objectives}
+
+The objectives of this study are to compute, for a representative commercial aircraft:
+
+\begin{itemize}
+\item Circulation of the leader aircraft, and of the trailer aircraft in both untrimmed and trimmed conditions.
+\item Wing lift slope and angle of attack for the leader and trailer aircraft.
+\item Span loading distribution as a function of $\xi$ for the leader, and for the untrimmed and trimmed trailer.
+\item Effective angle of attack distribution for the leader and trailer aircraft.
+\item Induced drag coefficient for the leader aircraft and the trailer aircraft (untrimmed and trimmed).
+\item Oswald's efficiency of the leader aircraft.
+\item Characteristics of the leader's far wake (two-vortex system).
+\item Vertical velocity profile induced by the far wake, as a function of $\xi$.
+\item Rolling moment coefficient of the untrimmed trailer aircraft.
+\item Aileron deflection angle required to trim the trailer aircraft.
+\end{itemize}
+
+\section{Assumptions}
+
+The following assumptions are made throughout this study:
+
+\begin{itemize}
+\item The wing is represented as a single (1-dimensional) lifting line.
+\item Wing sweep is not considered.
+\item The wing taper ratio is kept within the typical commercial-aircraft range of 0.20-0.30.
+\item The 2D lift-curve slope is taken as $a_0 = 2\pi$ (thin-airfoil value), for both the true wing sections and the "pseudo wing sections" inside the fuselage.
+\item The wing (and the pseudo wing sections within the fuselage) is not twisted; the fuselage's effect on the chord distribution is neglected, i.e. the chord is taken as linearly tapered across the full span, fuselage included.
+\item The flow is inviscid and incompressible (potential-flow lifting-line theory); the flight condition is otherwise representative of cruise at high altitude.
+\item The leader's wake is assumed to be fully rolled up by the time it reaches the trailer, and is represented as a two-vortex system (2VS) using the low-order algebraic Burnham-Hallock vortex core model.
+\item The aileron effect on the local angle of attack is linearized through a constant effectiveness factor $\tau$, and its spanwise footprint is smoothed with a regularized Heaviside function to avoid Gibbs-type oscillations in the truncated Fourier series.
+\end{itemize}
+
+\section{Assumed Aircraft}
+
+The aircraft \textbf{Airbus A320} is considered for this study of formation flight, in cruise conditions:
+
+\begin{itemize}
+\item Altitude = 11,000 m
+\item Air density, $\rho$ = 0.310828 kg/m$^3$
+\item Cruise speed, $U_\infty$ = 248 m/s
+\item Weight, $W$ = 765,180 N
+\item Wing span, $b$ = 35.8 m
+\item Wing area, $S$ = 122.6 m$^2$
+\end{itemize}
+
+Important assumed/derived values:
+
+\textbf{Aspect ratio}: $$A_R = \frac{b^2}{S} = \frac{35.8^2}{122.6} = \mathbf{10.454}$$
+
+\textbf{Wing taper ratio} ($\Lambda$): chosen as $\Lambda = \mathbf{0.266}$, within the typical 0.20-0.30 range for a modern narrow-body commercial aircraft.
+
+\textbf{Coefficient of lift} ($C_L$): obtained by taking the aircraft in cruise, with lift equal to weight, giving $$C_L = \frac{W}{\tfrac12 \rho U_\infty^2 S} = \mathbf{0.653}.$$
+
+The corresponding mean aerodynamic chord is $\bar c = S/b = 3.425$ m, and the taper factor is $\lambda = (1-\Lambda)/(1+\Lambda) = 0.580$.
+
+\section{Analysis of Results}
+
+\subsection{Circulation}
+
+\textbf{Leader aircraft}: the circulation is calculated using Prandtl lifting-line theory. It is obtained by solving Prandtl's compatibility equation for the Fourier coefficients $b_n$ in $\Gamma(\theta) = U_\infty b\,\alpha_w \sum_n b_n \sin(n\theta)$.
+
+\textbf{Trailer aircraft (untrimmed)}: the circulation differs from that of the leader because the added coefficients $C_n$ (both odd and even) must now be included, to represent the uneven upwash induced by the leader's wake across the span.
+
+\textbf{Trailer aircraft (trimmed)}: the circulation differs further still, since the added coefficients $d_n$ (aileron response) must also be included alongside $C_n$.
+
+Figure~\ref{fig:circ_all} shows all three circulation distributions together: high at the center and tapering symmetrically to each tip. The untrimmed trailer's circulation is slightly higher than the leader's over most of the span (it flies at a marginally higher effective angle of attack, favorable upwash included) and skewed toward the vortex side of the wing; the trimmed trailer's circulation is nearly indistinguishable from the untrimmed one, since the aileron trim correction is a small antisymmetric perturbation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/extracted/combined_circulation.png}
+\caption{Circulation distribution over the wing span: leader vs. untrimmed trailer vs. trimmed trailer.}
+\label{fig:circ_all}
+\end{figure}
+
+\subsection{Wing lift slope for leader aircraft}
+
+The finite-wing lift slope is obtained from the classical correction to the 2D lift-curve slope, $$\frac{dC_L}{d\alpha} = \frac{a_0}{1+a_0/(\pi A_R)} = 5.274\ \text{/rad}.$$ This reduction from the 2D value $a_0=2\pi=6.283$/rad reflects the finite-span induced-downwash effect, and is used identically for both the leader and the trailer, since both share the same wing geometry.
+
+\subsection{Wing angle of attack}
+
+\textbf{Leader aircraft}: the lift coefficient obtained from the cruise condition ($C_L=0.653$) must be the same for the trailer aircraft. Using $C_L$ and the wing lift slope, the leader's geometric angle of attack is found to be $\alpha_w = \mathbf{7.09^\circ}$.
+
+\textbf{Trailer aircraft (untrimmed)}: $C_L$ is the same as for the leader, but the angle of attack differs because the compatibility equation now also carries the $C_n$ term (upwash contribution). The trailer's geometric angle of attack is found to be $\alpha_w = \mathbf{7.28^\circ}$, slightly higher than the leader's since the extra lift from the favorable upwash must be balanced to keep $C_L$ unchanged.
+
+\textbf{Trailer aircraft (trimmed)}: the angle of attack is unchanged from the untrimmed case ($\alpha_w=7.28^\circ$), since the trim solution only adds the antisymmetric $d_n$ (aileron) terms, which carry zero net lift and therefore do not affect $\alpha_w$.
+
+\subsection{Span loading}
+
+\textbf{Leader aircraft}: the span loading $K(\xi) = (2/(U_\infty\bar c))\Gamma(\xi)$ is highest at the wing center and tapers toward the tips, close to the elliptical ideal.
+
+\textbf{Trailer aircraft (untrimmed)}: compared to the leader, the untrimmed trailer has more loading toward the vortex (port) side of the wing, due to the induced upwash from the leader's far wake.
+
+\textbf{Trailer aircraft (trimmed)}: trimming with the antisymmetric aileron deflection redistributes the loading between the two sides of the wing to cancel the rolling moment; the correction is a small antisymmetric perturbation on top of the untrimmed loading, and is barely distinguishable from it at this scale.
+
+Figure~\ref{fig:K_all} plots all three span loading distributions on the same axes, with distinct line styles and markers so that the (very close) untrimmed and trimmed trailer curves both remain visible.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/extracted/combined_span_loading.png}
+\caption{Span loading distribution over the wing span: leader vs. untrimmed trailer vs. trimmed trailer.}
+\label{fig:K_all}
+\end{figure}
+
+\subsection{Effective angle of attack}
+
+\textbf{Leader aircraft}: the geometric angle of attack is not equal to the effective angle of attack, since the downwash induced by the wing's own trailing vortices must be subtracted, $\alpha_e(\xi) = \alpha_w - \epsilon(\xi)$ (Figure~\ref{fig:aoa_LT}, red curve). The distribution first increases away from the center and then decreases sharply near the wing tips: near the tip, the finite wing's trailing-vortex system produces a strong local downwash that a real aircraft would normally mitigate with winglets, but which is not modeled here.
+
+\textbf{Trailer aircraft (untrimmed)}: the trailer's effective angle of attack additionally includes the induced upwash angle $\alpha_v(\xi)$ from the leader's wake, $\alpha_e(\xi) = (\alpha_w+\alpha_v(\xi)) - \epsilon(\xi)$. Figure~\ref{fig:aoa_LT} compares it to the leader's: the trailer sits at a consistently higher effective angle of attack across most of the span, with a stronger effect toward the vortex (port) side, confirming the favorable interference of the leader's wake.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/extracted/leader_vs_trailer_effective_aoa.png}
+\caption{Effective angle of attack: leader vs. (untrimmed) trailer aircraft.}
+\label{fig:aoa_LT}
+\end{figure}
+
+\subsection{Induced drag coefficient and Oswald's efficiency}
+
+The induced drag coefficient is the drag associated with the lift produced by the finite wing (via the trailing-vortex system).
+
+\textbf{Leader aircraft}: the induced drag coefficient is found to be $C_{D_i} = 0.01327$.
+
+\textbf{Trailer aircraft (untrimmed)}: the induced drag coefficient is found to be $C_{D_i}=0.01191$, about 10\% lower than the leader's.
+
+\textbf{Trailer aircraft (trimmed)}: the induced drag coefficient is found to be $C_{D_i}=0.01191$, essentially unchanged from the untrimmed case, since the trim correction is a small, purely antisymmetric perturbation to an already near-optimal loading.
+
+Seeing these results, the induced drag is reduced for the trailer relative to the leader, confirming the aerodynamic benefit of formation flight, with the trim penalty being negligible.
+
+The Oswald efficiency of the leader, obtained from the drag-polar relation $e = C_L^2/(\pi A_R C_{D_i})$, is $e = \mathbf{0.979}$, close to unity, reflecting the near-elliptical span loading of Figure~\ref{fig:K_all}.
+
+\subsection{Far wake}
+
+The leader aircraft sheds a wake that rolls up, sufficiently far downstream, into a two-vortex system (2VS) of circulation $\pm\Gamma_0$ and spacing $b_0$. The 2VS parameters are obtained from the rolled-up port half of the shed vortex sheet, using conservation of the linear impulse (vertical momentum) for the vortex spacing, and conservation of cross-flow kinetic energy (Burnham-Hallock model) for the core radius $r_c$. The resulting far-wake characteristics are: $\Gamma_0/(U_\infty b) = 0.044$, span loading factor $s = b_0/b = 0.740$, and core radius ratio $r_c/b = 0.048$ (i.e. $b_0 = 26.499$ m and $r_c \approx 1.72$ m).
+
+\subsection{Vertical velocity profile}
+
+Using the Burnham-Hallock vortex model for the far-wake 2VS, the induced vertical (upwash/downwash) velocity is computed as a function of $\xi$ along a line through the vortex centers, at the same altitude as the trailer aircraft. The induced vertical velocity peaks just outside each vortex core, is downward (negative) between the two vortices, and decays away from the 2VS on either side, as shown in Figure~\ref{fig:farwake_wv}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/extracted/leader_farwake_induced_velocity.png}
+\caption{Vertical velocity distribution induced by the far-wake two-vortex system of the leader aircraft.}
+\label{fig:farwake_wv}
+\end{figure}
+
+\subsection{Rolling moment in trailer aircraft}
+
+The untrimmed trailer aircraft experiences a rolling moment because the leader's wake induces a non-uniform upwash across its span (stronger on the vortex side than on the far side), unbalancing the spanwise loading. Using the rolling-moment integral $M=\rho U_\infty (b^2/4)\int_0^\pi \Gamma(\theta)\cos\theta\sin\theta\,d\theta$ together with the dynamic pressure, the rolling moment coefficient of the untrimmed trailer is found to be $C_M = \mathbf{1.2\times10^{-4}}$. This moment must be counteracted with the ailerons for the trailer to fly in trimmed (wings-level) conditions.
+
+\subsection{Aileron deflection}
+
+\textbf{Trailer aircraft (trimmed)}: to counter the rolling moment found in Section~5.9, ailerons are deflected antisymmetrically -- located between $0.70\le|\xi|\le0.90$ on each half of the wing, with control effectiveness factor $\tau=0.050$. To avoid Gibbs-type oscillations from the discontinuous aileron edges in the truncated Fourier series, the aileron effectiveness function $f(\xi)$ is smoothed over a length $2\varepsilon$ (with $\varepsilon=0.05$) using a regularized Heaviside function (Figure~\ref{fig:f_xi}); a second linear system is then solved for the added coefficients $d_n$.
+
+By linearity of the compatibility equation, the rolling moment varies linearly with the deflection, $M(\delta_a) = M_{untrimmed} + \tau\delta_a M_d$, and setting $M(\delta_a)=0$ gives the required deflection angle to bring the aircraft to a stable (trimmed) condition: $$\delta_a = \mathbf{-0.54^\circ}.$$ This small deflection is consistent with the small rolling moment being corrected. The resulting rolling moment coefficient after trim is $C_M \approx 2\times10^{-18}$, i.e. zero to numerical precision, confirming the trim solution.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{/Users/sanju/Projects/Python/Aerodynamics/Formation Flight/Figures/extracted/aileron_effectiveness_function.png}
+\caption{Smoothed, antisymmetric aileron effectiveness function f(xi) used for trimming the trailer aircraft.}
+\label{fig:f_xi}
+\end{figure}
+
+\section{Conclusion}
+
+We have considered formation flight in this project, computing the aerodynamic effect of the leader aircraft's wake on a trailing aircraft using Prandtl lifting-line theory. The leader's circulation and span loading, symmetric about the wing center, were first obtained, followed by the leader's rolled-up far wake represented as a two-vortex system ($b_0/b=0.740$, $r_c/b=0.048$). The trailer aircraft, surfing close to that wake, was shown to fly at a lower induced drag coefficient than the leader even before trimming (a reduction of about 10\%), because the favorable upwash increases its effective angle of attack. A small antisymmetric aileron deflection ($\delta_a=-0.54^\circ$) was found to trim out the resulting rolling moment ($C_M=1.2\times10^{-4}$ untrimmed) at a negligible additional drag penalty.
+
+Assuming a parasitic drag coefficient equal to the leader's induced drag coefficient (as instructed), the trimmed trailer's total drag coefficient ($C_D=0.02518$) is found to be about \textbf{5.1\% lower} than the leader's ($C_D=0.02653$). This confirms that formation flight has clear aerodynamic advantages: the lift produced by the leader aircraft has a positive impact on the trailer aircraft, whose induced drag is reduced for the same lift. This reduced drag directly translates into lower fuel consumption and extended range for the trailing aircraft, supporting formation flight as a potential fuel-saving concept for commercial aviation.
+
+\end{document}
